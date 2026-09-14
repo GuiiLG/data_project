@@ -1,5 +1,6 @@
 from src.reader import reader
 from src.check_for_nulls import check_for_nulls
+from src.clean_structure import clean_structure
 from pathlib import Path
 
 current_directory = Path(__file__).resolve().parent
@@ -10,6 +11,7 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 def main():
     datasets = reader(data_dir)
+    clean_structure(datasets)
     check_for_nulls(datasets)
 
 
