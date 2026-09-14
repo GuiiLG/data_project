@@ -1,875 +1,770 @@
-# Projeto 2 — Data Processing Pipeline
+# Project 1 — FIFA 21 Data Cleaning
 
-## Objetivo
+## 1. Project Context
 
-Construir, usando **Python sem pandas**, um pequeno pipeline de processamento de dados utilizando dados reais de e-commerce.
+You are given a raw dataset containing information about FIFA 21 football players.
 
-O pipeline deverá:
+The dataset should be treated as if it were received from an external system with unknown data quality.
 
-```text
-dados brutos
-    ↓
-ingestão
-    ↓
-validação
-    ↓
-limpeza
-    ↓
-transformação
-    ↓
-relacionamento
-    ↓
-agregação/análise
-    ↓
-exportação
-```
+Your goal is **not simply to "clean a CSV"**.
 
-O foco é aprender a manipular dados diretamente com Python antes de introduzir pandas, SQL, APIs e bancos de dados.
+The goal is to develop the ability to:
+
+> Receive unknown raw data → investigate it → identify problems → make decisions → transform the data → validate the result → produce reliable structured data.
+
+This project is intentionally designed to make you investigate the data yourself.
+
+Do not assume beforehand that you know what is wrong with the dataset.
 
 ---
 
-# 1. Dataset escolhido
+# 2. Main Learning Objectives
 
-## Brazilian E-Commerce Public Dataset by Olist
+This project is primarily about strengthening your Python fundamentals and developing a Data Engineering mindset.
 
-Fonte:
+By the end of the project, you should have practiced:
 
-**Kaggle — Brazilian E-Commerce Public Dataset by Olist**
+* Reading and writing files
+* Working with CSV files
+* Working with lists and dictionaries
+* String manipulation
+* Type conversion
+* Regular expressions when appropriate
+* Exception handling
+* Functions and modular code
+* Data validation
+* Data cleaning
+* Data normalization
+* Detecting inconsistencies
+* Handling missing values
+* Detecting duplicates
+* Investigating unknown data
+* Making data-quality decisions
+* Generating reports
+* Designing a small, reliable data-processing pipeline
 
-https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce
-
-O dataset foi disponibilizado pela Olist e contém aproximadamente **100 mil pedidos realizados entre 2016 e 2018**, com informações de pedidos, clientes, produtos, pagamentos, frete, localização, vendedores e avaliações. Os dados comerciais são reais, mas foram anonimizados. 
-
-O dataset oficial contém **9 arquivos CSV**:
-
-```text
-olist_customers_dataset.csv
-olist_geolocation_dataset.csv
-olist_order_items_dataset.csv
-olist_order_payments_dataset.csv
-olist_order_reviews_dataset.csv
-olist_orders_dataset.csv
-olist_products_dataset.csv
-olist_sellers_dataset.csv
-product_category_name_translation.csv
-```
-
-Neste projeto **não será necessário utilizar todos eles**.
-
----
-
-# 2. Arquivos que serão utilizados
-
-Para manter o projeto desafiador sem ficar desnecessariamente gigantesco, comece com estes arquivos:
-
-```text
-olist_customers_dataset.csv
-olist_orders_dataset.csv
-olist_order_items_dataset.csv
-olist_products_dataset.csv
-olist_order_reviews_dataset.csv
-product_category_name_translation.csv
-```
-
-Os demais arquivos ficam como material opcional para uma segunda etapa.
+The project should force you to understand the data instead of relying on a library to automatically do the work for you.
 
 ---
 
-# 3. O papel de cada arquivo
+# 3. Main Restriction — Pure Python
 
-## `olist_customers_dataset.csv`
+For this project, **do not use Pandas, NumPy, Polars, or other DataFrame/data-processing libraries.**
 
-Informações sobre clientes e localização.
+You must implement the data processing using Python and its standard library.
 
-Principais campos:
-
-```text
-customer_id
-customer_unique_id
-customer_zip_code_prefix
-customer_city
-customer_state
-```
-
-Uma particularidade importante do dataset é que `customer_id` identifica o registro do cliente associado ao pedido, enquanto `customer_unique_id` permite identificar o mesmo consumidor em diferentes pedidos.
-
-Isso será importante para análises de recompra.
-
----
-
-## `olist_orders_dataset.csv`
-
-Informações dos pedidos.
-
-Campos importantes:
+You may use standard-library modules such as:
 
 ```text
-order_id
-customer_id
-order_status
-order_purchase_timestamp
-order_approved_at
-order_delivered_carrier_date
-order_delivered_customer_date
-order_estimated_delivery_date
-```
-
-Será uma das principais fontes do pipeline.
-
----
-
-## `olist_order_items_dataset.csv`
-
-Itens individuais de cada pedido.
-
-Campos importantes:
-
-```text
-order_id
-order_item_id
-product_id
-seller_id
-shipping_limit_date
-price
-freight_value
-```
-
-Um pedido pode possuir vários itens.
-
-Isso é importante:
-
-```text
-1 pedido
-    ↓
-vários itens
-```
-
-Não trate `order_id` como se aparecesse apenas uma vez nesse arquivo.
-
----
-
-## `olist_products_dataset.csv`
-
-Informações dos produtos.
-
-Campos importantes:
-
-```text
-product_id
-product_category_name
-product_name_lenght
-product_description_lenght
-product_photos_qty
-product_weight_g
-product_length_cm
-product_height_cm
-product_width_cm
-```
-
-Esse arquivo permitirá trabalhar com:
-
-- valores ausentes;
-- categorias;
-- valores numéricos;
-- relacionamento por `product_id`.
-
----
-
-## `olist_order_reviews_dataset.csv`
-
-Avaliações dos pedidos.
-
-Campos importantes:
-
-```text
-review_id
-order_id
-review_score
-review_comment_title
-review_comment_message
-review_creation_date
-review_answer_timestamp
-```
-
-Este arquivo será particularmente importante para:
-
-- valores ausentes;
-- texto;
-- Unicode;
-- UTF-8;
-- limpeza de strings;
-- regex;
-- análise de avaliações.
-
----
-
-## `product_category_name_translation.csv`
-
-Relaciona nomes de categorias em português com seus equivalentes em inglês.
-
-Campos:
-
-```text
-product_category_name
-product_category_name_english
-```
-
-Esse arquivo servirá como uma fonte adicional para praticar relacionamento entre dados.
-
----
-
-# 4. Estrutura inicial do projeto
-
-Comece com:
-
-```text
-project/
-├── data/
-│   ├── raw/
-│   └── processed/
-│
-├── src/
-│
-└── README.md
-```
-
-Coloque os arquivos originais do Kaggle em:
-
-```text
-data/raw/
-```
-
-### Regra importante
-
-Os arquivos dentro de `raw/` são os dados originais.
-
-**Não altere esses arquivos.**
-
-Todo resultado produzido pelo seu programa deverá ser colocado em:
-
-```text
-data/processed/
-```
-
----
-
-# 5. Regra principal
-
-## NÃO usar pandas
-
-O projeto deverá ser desenvolvido sem:
-
-```python
-import pandas
-```
-
-Também não utilizar bibliotecas externas para resolver automaticamente as etapas de limpeza e transformação.
-
-Pode utilizar a biblioteca padrão do Python, incluindo:
-
-```python
 csv
 json
-re
 pathlib
-collections
 datetime
+re
+collections
+logging
+statistics
+math
 ```
 
-e outras bibliotecas padrão que façam sentido.
+You do not need to use all of them.
+
+Use a library only when it actually makes sense for the problem.
+
+The purpose of this restriction is to make you practice working directly with:
+
+* lists
+* dictionaries
+* strings
+* files
+* loops
+* conditions
+* functions
+* exceptions
+* data structures
+
+Do not try to recreate Pandas.
+
+The objective is to understand what is happening underneath the abstractions.
 
 ---
 
-# 6. Estrutura de dados principal
+# 4. Important Principle
 
-A estrutura principal de manipulação deverá ser:
+Do not begin by writing a cleaning script.
 
-```python
-list[dict]
-```
+First investigate the dataset.
 
-Exemplo:
-
-```python
-[
-    {
-        "order_id": "...",
-        "customer_id": "...",
-        "status": "delivered"
-    },
-    {
-        "order_id": "...",
-        "customer_id": "...",
-        "status": "canceled"
-    }
-]
-```
-
-Você poderá utilizar outras estruturas auxiliares quando necessário.
-
-Por exemplo:
-
-```python
-dict
-set
-tuple
-```
-
----
-
-# 7. Etapa 1 — Ingestão
-
-Crie uma forma de carregar os arquivos CSV.
-
-Você deverá:
-
-- abrir os arquivos;
-- identificar o encoding adequado;
-- lidar com o delimitador;
-- ler o cabeçalho;
-- transformar os registros em estruturas Python;
-- lidar com possíveis problemas de leitura.
-
-Não utilize `pandas.read_csv()`.
-
-O resultado deverá ser uma estrutura que você consiga manipular diretamente em Python.
-
----
-
-# 8. Etapa 2 — Validação
-
-Antes de limpar os dados, faça uma etapa de inspeção.
-
-Você deverá descobrir problemas como:
-
-- valores ausentes;
-- registros incompletos;
-- IDs ausentes;
-- IDs duplicados quando deveriam ser únicos;
-- tipos armazenados como texto;
-- relacionamentos quebrados;
-- datas inválidas;
-- valores inesperados.
-
-Crie uma forma de registrar ou contabilizar esses problemas.
-
-### Regra
-
-Não simplesmente delete dados problemáticos.
-
-Primeiro descubra:
-
-> Qual é o problema?
-
-Depois:
-
-> Qual deveria ser o comportamento correto?
-
----
-
-# 9. Etapa 3 — Limpeza
-
-Faça a limpeza necessária nos dados.
-
-Alguns exemplos de problemas que podem ser encontrados:
+Your workflow should be approximately:
 
 ```text
-strings vazias
-None
-espaços extras
-categorias inconsistentes
-campos ausentes
-valores numéricos representados como texto
-datas representadas como strings
-```
-
-Você deverá estabelecer regras para cada tipo de problema.
-
----
-
-# 10. Etapa 4 — Valores ausentes
-
-Trabalhe especificamente com os valores ausentes.
-
-Você deverá identificar:
-
-- quais campos possuem valores ausentes;
-- quantos registros são afetados;
-- quais campos são essenciais;
-- quais podem receber um tratamento diferente.
-
-Nem todo valor ausente deve necessariamente resultar na exclusão do registro.
-
-Decida caso a caso.
-
----
-
-# 11. Etapa 5 — Duplicatas
-
-Identifique registros duplicados.
-
-Mas não assuma que duas linhas iguais são sempre o único tipo de duplicata possível.
-
-Pense em critérios de unicidade.
-
-Por exemplo:
-
-```text
-review_id
-order_id
-product_id
-```
-
-podem possuir regras diferentes de unicidade dependendo do arquivo.
-
-Documente suas decisões.
-
----
-
-# 12. Etapa 6 — Transformação
-
-Transforme os dados para que possam ser analisados.
-
-Possíveis transformações:
-
-- strings;
-- datas;
-- números;
-- categorias;
-- identificadores;
-- valores monetários;
-- campos derivados.
-
-Exemplo conceitual:
-
-```text
-"  delivered "
-       ↓
-"delivered"
-```
-
-Ou:
-
-```text
-"2018-08-02 10:26:34"
-       ↓
-objeto/data adequada
-```
-
-O objetivo é que os dados processados tenham tipos e formatos coerentes.
-
----
-
-# 13. Etapa 7 — Relacionamento entre os arquivos
-
-Esta é uma das partes mais importantes do projeto.
-
-Você deverá relacionar os arquivos utilizando os identificadores existentes.
-
-Exemplo:
-
-```text
-orders
-   │
-   │ customer_id
-   ↓
-customers
-```
-
-E:
-
-```text
-orders
-   │
-   │ order_id
-   ↓
-order_items
-   │
-   │ product_id
-   ↓
-products
-```
-
-E:
-
-```text
-products
-   │
-   │ product_category_name
-   ↓
-product_category_name_translation
-```
-
-Você deverá descobrir como realizar esses relacionamentos eficientemente.
-
-### Desafio
-
-Evite simplesmente percorrer uma lista inteira toda vez que precisar encontrar um registro relacionado.
-
-Pense em estruturas auxiliares que possam facilitar essas buscas.
-
----
-
-# 14. Etapa 8 — Regex
-
-Regex deverá ser usada para resolver problemas reais dos dados.
-
-Utilize:
-
-```python
-import re
-```
-
-Praticar:
-
-- busca de padrões;
-- extração;
-- grupos;
-- classes;
-- quantificadores;
-- validação.
-
-As avaliações possuem campos textuais que poderão ser utilizados para isso.
-
-Não crie um exercício artificial de regex separado do projeto.
-
-Procure um problema real nos dados que possa ser resolvido com padrões.
-
----
-
-# 15. Etapa 9 — Encoding
-
-O projeto deverá envolver explicitamente:
-
-- ASCII;
-- Unicode;
-- UTF-8;
-- encoding;
-- decoding;
-- problemas comuns de encoding.
-
-Observe principalmente os campos textuais em português, como:
-
-```text
-customer_city
-product_category_name
-review_comment_message
-```
-
-Você deverá entender por que caracteres como:
-
-```text
-ã
-ç
-é
-õ
-```
-
-podem apresentar problemas quando o encoding é tratado incorretamente.
-
----
-
-# 16. Etapa 10 — Filtragem
-
-Crie operações para selecionar subconjuntos dos dados.
-
-Exemplos:
-
-- pedidos de determinado estado;
-- pedidos com determinado status;
-- produtos de determinada categoria;
-- avaliações com determinada nota;
-- pedidos acima de determinado valor;
-- clientes que fizeram mais de uma compra.
-
-Os filtros devem utilizar as estruturas Python, sem pandas.
-
----
-
-# 17. Etapa 11 — Ordenação
-
-Crie análises que exijam ordenação.
-
-Exemplos:
-
-- produtos com maior número de vendas;
-- categorias com maior faturamento;
-- clientes com mais pedidos;
-- maiores valores de frete;
-- melhores/piores avaliações.
-
-Praticar:
-
-```python
-sorted()
-key=
-lambda
-```
-
----
-
-# 18. Etapa 12 — Agregação e contagem
-
-Produza informações agregadas.
-
-Exemplos:
-
-### Pedidos
-
-- quantidade total;
-- quantidade por status;
-- quantidade por estado;
-- quantidade por mês.
-
-### Produtos
-
-- produtos mais vendidos;
-- categorias mais vendidas;
-- quantidade de itens por categoria.
-
-### Clientes
-
-- quantidade de clientes;
-- clientes com múltiplos pedidos;
-- quantidade média de pedidos por cliente.
-
-### Avaliações
-
-- média das notas;
-- distribuição das notas;
-- quantidade de avaliações por nota;
-- quantidade de avaliações com comentário.
-
-Você deverá decidir quais métricas fazem sentido.
-
----
-
-# 19. Etapa 13 — Análises de negócio
-
-Depois do processamento, produza algumas conclusões baseadas nos dados.
-
-Por exemplo:
-
-- Qual categoria possui maior volume de vendas?
-- Qual estado possui mais pedidos?
-- Qual é o ticket médio?
-- Qual é a distribuição das avaliações?
-- Produtos mais vendidos possuem melhores avaliações?
-- Existe diferença relevante entre estados?
-- Quanto o frete representa em relação ao preço dos produtos?
-- Qual período teve maior volume de pedidos?
-
-Não é necessário responder todas essas perguntas.
-
-Escolha um conjunto que seja suficiente para demonstrar que você sabe trabalhar com os dados.
-
----
-
-# 20. Etapa 14 — TXT
-
-O projeto deverá produzir pelo menos um arquivo `.txt`.
-
-Por exemplo:
-
-```text
-data/processed/data_quality_report.txt
-```
-
-Esse arquivo poderá conter:
-
-```text
-RELATÓRIO DE QUALIDADE DOS DADOS
-
-Total de pedidos: ...
-Pedidos inválidos: ...
-Valores ausentes: ...
-Duplicatas: ...
-
-...
-```
-
-O formato e o conteúdo exatos ficam por sua conta.
-
----
-
-# 21. Etapa 15 — JSON
-
-O projeto deverá produzir pelo menos um arquivo `.json`.
-
-Por exemplo:
-
-```text
-data/processed/summary.json
-```
-
-Ele deverá conter resultados estruturados do processamento.
-
-Exemplo conceitual:
-
-```json
-{
-    "total_orders": 0,
-    "average_order_value": 0,
-    "top_categories": [],
-    "orders_by_state": {}
-}
-```
-
-Os campos reais deverão ser definidos por você.
-
----
-
-# 22. Etapa 16 — CSV
-
-O projeto deverá produzir pelo menos um CSV processado.
-
-Exemplo:
-
-```text
-data/processed/orders_processed.csv
-```
-
-Esse arquivo deverá representar uma versão tratada dos dados.
-
-Você deverá decidir:
-
-- quais campos manter;
-- quais campos transformar;
-- quais campos derivados criar;
-- qual será a estrutura final.
-
----
-
-# 23. Resultado esperado
-
-Ao executar o projeto, o fluxo deverá ser aproximadamente:
-
-```text
-data/raw/
+Raw Dataset
     ↓
-leitura
+Investigation
     ↓
-validação
+Identify Problems
     ↓
-limpeza
+Define Cleaning Rules
     ↓
-transformação
+Implement Transformations
     ↓
-relacionamento
+Validate Results
     ↓
-análise
+Generate Processed Dataset
     ↓
-data/processed/
+Generate Data Quality Report
 ```
 
-O resultado final deverá conter dados processados e relatórios que possam ser utilizados posteriormente.
+The important part is the reasoning between each step.
 
 ---
 
-# 24. O que NÃO entra neste projeto
+# 5. Phase 1 — Data Investigation
 
-De propósito:
+Before modifying anything, inspect the dataset.
 
-- SQL
-- banco de dados
-- API
-- pandas
-- NumPy
-- Spark
-- Docker
-- cloud
-- asyncio
-- threading
-- OOP obrigatória
-- arquitetura complexa
+You should discover what the data actually looks like.
 
-Esses assuntos ficam para projetos posteriores.
+Investigate things such as:
+
+* Number of records
+* Number of columns
+* Column names
+* Example records
+* Missing values
+* Empty strings
+* Duplicate records
+* Potential identifiers
+* Apparent data types
+* Inconsistent formats
+* Unexpected characters
+* Whitespace problems
+* Newline characters
+* Numeric values stored as strings
+* Values containing multiple pieces of information
+* Different units
+* Different representations of the same concept
+* Suspicious values
+* Unexpected formats
+
+Do not assume that a column is problematic just because it looks unusual.
+
+Investigate it first.
+
+For example, if a value looks strange, ask:
+
+> Is this actually invalid, or is it simply represented differently?
 
 ---
 
-# 25. Organização do código
+# 6. Investigate Before Searching for Solutions
 
-A estrutura inicial será simples:
+You are allowed and encouraged to research specific Python concepts when necessary.
+
+For example:
+
+```text
+How do I use csv.DictReader?
+How do I remove newline characters from a string?
+How do I use regular expressions in Python?
+How can I convert a string containing "M" into a number?
+How does datetime.strptime work?
+```
+
+This is allowed.
+
+However, avoid searching for complete solutions to the project.
+
+Avoid searches such as:
+
+```text
+How to clean the FIFA 21 dataset
+FIFA 21 dataset cleaning solution
+FIFA 21 messy dataset Python solution
+FIFA 21 Kaggle cleaning notebook
+```
+
+Do not copy an existing cleaning notebook or tutorial.
+
+The objective is for **you to discover the problems and decide how to solve them.**
+
+---
+
+# 7. Phase 2 — Identify Data Quality Problems
+
+After investigating the dataset, create a list of the problems you discovered.
+
+For each problem, determine:
+
+1. What is wrong?
+2. Which column(s) are affected?
+3. How many records are affected?
+4. Is the problem actually invalid data?
+5. What should the correct representation be?
+6. What should happen when the value cannot be converted or corrected?
+7. Why is your chosen solution appropriate?
+
+Examples of possible problems include:
+
+* Numeric values stored as strings
+* Currency values containing symbols
+* Values using `K`, `M`, or other suffixes
+* Height represented using feet/inches
+* Weight represented using different units
+* Special characters
+* Extra whitespace
+* Embedded newline characters
+* Inconsistent date formats
+* Empty values
+* Missing values
+* Duplicate IDs
+* Invalid numeric values
+* Unexpected strings
+* Fields containing multiple pieces of information
+
+These are examples only.
+
+You must discover the actual problems in the dataset yourself.
+
+---
+
+# 8. Phase 3 — Define Cleaning Rules
+
+Before implementing the transformations, define what your program should do.
+
+For every important problem, establish a rule.
+
+For example:
+
+```text
+Problem:
+Currency values contain "€", "K", and "M".
+
+Decision:
+Convert all monetary values into a single numeric representation.
+
+Reason:
+A numeric representation makes the values easier to process and compare.
+```
+
+Or:
+
+```text
+Problem:
+Some records contain missing values.
+
+Decision:
+Do not automatically replace every missing value.
+
+Reason:
+The correct treatment depends on the meaning and importance of the column.
+```
+
+Your decisions should be based on the actual data.
+
+Do not clean data simply because it "looks ugly."
+
+The goal is to make the data **consistent, meaningful, and usable.**
+
+---
+
+# 9. Cleaning and Normalization
+
+Implement the cleaning rules you defined.
+
+The processed dataset should have consistent representations.
+
+Possible transformations may include:
+
+* Removing unnecessary whitespace
+* Normalizing text
+* Removing unwanted characters
+* Converting numeric strings into numbers
+* Converting monetary values into numeric values
+* Converting dates into a consistent format
+* Converting units into a common unit
+* Splitting fields when appropriate
+* Handling missing values
+* Normalizing categorical values
+* Removing or rejecting invalid records
+* Preserving values that are unusual but valid
+
+For example, a value such as:
+
+```text
+€110.5M
+```
+
+might need to become a numeric representation.
+
+A value such as:
+
+```text
+5'11"
+```
+
+might need to be converted into a consistent measurement.
+
+But these are examples of possible problems, not mandatory transformations.
+
+The dataset itself should determine what you actually need to change.
+
+---
+
+# 10. Invalid vs. Unusual Data
+
+One of the most important goals of this project is learning to distinguish between:
+
+```text
+Invalid data
+```
+
+and
+
+```text
+Unusual but valid data
+```
+
+Do not remove a value merely because it looks strange.
+
+For example, consider a player's age.
+
+A value such as:
+
+```text
+120
+```
+
+would probably be invalid.
+
+But a player with an unusual position, nationality, salary, or rating is not necessarily invalid.
+
+Your program should make decisions based on the meaning of the data.
+
+Whenever possible, avoid arbitrary assumptions.
+
+---
+
+# 11. Data Validation
+
+After cleaning the data, validate the result.
+
+Do not assume that the transformation worked simply because the program finished without errors.
+
+Check the processed dataset for problems.
+
+Depending on the dataset, validation should include things such as:
+
+* Number of records
+* Number of rejected records
+* Number of missing values
+* Number of duplicate IDs
+* Expected columns
+* Expected data types
+* Invalid numeric values
+* Negative values where they make no sense
+* Impossible measurements
+* Invalid dates
+* Unexpected formats
+* Empty required fields
+* Unexpected values after transformation
+
+Examples:
+
+```text
+Age < 0
+Weight <= 0
+Height <= 0
+Negative monetary values
+Duplicate player IDs
+Invalid dates
+Missing required identifiers
+```
+
+Again, these are examples.
+
+Define validation rules according to the meaning of the dataset.
+
+---
+
+# 12. Raw Data Must Never Be Modified
+
+The original dataset must remain untouched.
+
+Organize the project so that raw and processed data are separated.
+
+Recommended structure:
 
 ```text
 project/
+│
 ├── data/
 │   ├── raw/
+│   │   └── players.csv
+│   │
 │   └── processed/
+│       └── players_clean.csv
+│
+├── reports/
+│   └── data_quality.txt
 │
 ├── src/
+│   ├── ...
 │
 └── README.md
 ```
 
-**Não será fornecida uma arquitetura pronta para `src/`.**
+The raw file should be treated as immutable input.
 
-Conforme o projeto crescer, você deverá decidir quando separar responsabilidades.
-
-Se, por exemplo, seu arquivo principal começar a ficar enorme, esse será um problema para você resolver.
+Your program reads the raw dataset and produces new outputs.
 
 ---
 
-# 26. Critério de conclusão
+# 13. Data Quality Report
 
-O projeto estará concluído quando você conseguir:
+Your program must generate a data quality report.
 
-- [ ] Ler os arquivos sem pandas.
-- [ ] Trabalhar com CSV.
-- [ ] Trabalhar com JSON.
-- [ ] Trabalhar com TXT.
-- [ ] Trabalhar com delimitadores.
-- [ ] Trabalhar com encoding/decoding.
-- [ ] Entender UTF-8 e Unicode.
-- [ ] Manipular listas de dicionários.
-- [ ] Filtrar dados.
-- [ ] Ordenar dados.
-- [ ] Transformar dados.
-- [ ] Agregar dados.
-- [ ] Contar ocorrências.
-- [ ] Detectar e tratar duplicatas.
-- [ ] Tratar valores ausentes.
-- [ ] Relacionar diferentes arquivos.
-- [ ] Utilizar regex em um problema real.
-- [ ] Gerar dados processados.
-- [ ] Gerar um relatório TXT.
-- [ ] Gerar um resumo JSON.
-- [ ] Gerar pelo menos um CSV processado.
-- [ ] Documentar as principais decisões tomadas durante o processamento.
+The report should contain useful information about what happened during processing.
+
+At minimum, include:
+
+* Total number of records received
+* Number of records successfully processed
+* Number of rejected records
+* Number of missing values
+* Number of duplicate records or IDs
+* Number of invalid values
+* Important transformations performed
+* Important problems discovered
+* Any relevant warnings
+* Any limitations or unresolved problems
+
+The exact structure of the report is up to you.
+
+The report should answer questions such as:
+
+```text
+How much data did I receive?
+
+How much data did I successfully process?
+
+How much data was rejected?
+
+What problems did I find?
+
+What transformations did I perform?
+
+Why did I perform them?
+
+What problems remain?
+```
 
 ---
 
-# 27. Próximo projeto
+# 14. Error Handling
 
-Depois deste projeto, o próximo será deliberadamente mais próximo de uma pipeline de Engenharia de Dados:
+The program should handle expected errors gracefully.
 
-```text
-API
- ↓
-JSON
- ↓
-Python
- ↓
-transformação
- ↓
-SQL
- ↓
-banco de dados
- ↓
-consultas
+Consider situations such as:
+
+* File does not exist
+* File is empty
+* CSV is malformed
+* A row has an unexpected number of fields
+* A value cannot be converted
+* A date has an unexpected format
+* A numeric field contains invalid text
+* Output file cannot be written
+* Required column is missing
+
+The program should not simply crash without useful information.
+
+Use exceptions where appropriate.
+
+However, do not use:
+
+```python
+try:
+    ...
+except:
+    pass
 ```
 
-Depois podemos evoluir para tecnologias como:
+simply to hide problems.
+
+Errors should either be handled meaningfully or reported clearly.
+
+---
+
+# 15. Code Organization
+
+Avoid putting the entire project inside one huge function or one giant script.
+
+Separate responsibilities when appropriate.
+
+For example:
 
 ```text
-Docker
-orquestração
-cloud
-ETL/ELT
+read data
+    ↓
+investigate data
+    ↓
+clean data
+    ↓
+validate data
+    ↓
+write processed data
+    ↓
+generate report
 ```
 
-Mas **não antecipar essas tecnologias agora**.
+You may organize your code into modules such as:
 
-O objetivo deste projeto é dominar a matéria-prima:
+```text
+src/
+├── reader.py
+├── investigation.py
+├── cleaning.py
+├── validation.py
+├── writer.py
+└── report.py
+```
 
-> **dados + arquivos + Python + transformação.**
+This is only a suggestion.
+
+Do not create unnecessary abstraction just for the sake of having many files.
+
+The organization should make the program easier to understand and maintain.
+
+---
+
+# 16. Reproducibility
+
+Your program should be able to process the dataset from start to finish without requiring manual modification of the raw file.
+
+Ideally:
+
+```text
+raw dataset
+      ↓
+run program
+      ↓
+processed dataset
+      +
+data quality report
+```
+
+The goal is to create a repeatable process.
+
+If the same raw dataset is processed again, the result should be consistent.
+
+---
+
+# 17. Final Challenge
+
+After completing the first version of the project, ask yourself:
+
+> "If I received this file again tomorrow, would I trust my program to process it automatically?"
+
+If the answer is no, investigate why.
+
+Possible reasons:
+
+* The program depends on manual fixes
+* Some unexpected values still cause crashes
+* Validation is insufficient
+* The cleaning rules are too specific
+* The program silently loses information
+* Some decisions were arbitrary
+* The program does not report important problems
+* The output cannot be trusted
+
+Improve the program where necessary.
+
+---
+
+# 18. Final Deliverables
+
+The project should produce at least:
+
+### 1. Processed Dataset
+
+A cleaned and normalized version of the raw dataset.
+
+```text
+data/processed/players_clean.csv
+```
+
+### 2. Data Quality Report
+
+A report describing the processing and the problems discovered.
+
+```text
+reports/data_quality.txt
+```
+
+### 3. Source Code
+
+Organized Python source code responsible for:
+
+* Reading
+* Investigation
+* Cleaning
+* Validation
+* Writing
+* Reporting
+
+### 4. README
+
+The README should explain:
+
+* What the project does
+* Where the dataset came from
+* How to run the project
+* What problems were discovered
+* What transformations were performed
+* What validation rules were implemented
+* Important decisions made during cleaning
+* Limitations of the final result
+
+---
+
+# 19. Success Criteria
+
+The project is successful if you can demonstrate that you can take an unfamiliar dataset and independently go through the following process:
+
+```text
+UNKNOWN DATA
+     ↓
+INVESTIGATE
+     ↓
+UNDERSTAND
+     ↓
+IDENTIFY PROBLEMS
+     ↓
+MAKE DATA-QUALITY DECISIONS
+     ↓
+IMPLEMENT IN PYTHON
+     ↓
+VALIDATE
+     ↓
+PRODUCE RELIABLE DATA
+     ↓
+DOCUMENT THE PROCESS
+```
+
+The quality of the project is **not** measured by how many lines of code you write.
+
+It is measured by whether you can explain:
+
+* What was wrong with the raw data
+* How you discovered it
+* Why it was a problem
+* What decision you made
+* Why you made that decision
+* How you implemented the transformation
+* How you validated the result
+* What information you removed or preserved
+* What limitations remain
+
+---
+
+# 20. What You Should NOT Optimize For
+
+Do not try to:
+
+* Write the shortest possible code
+* Use advanced Python just to look sophisticated
+* Create unnecessary classes
+* Create unnecessary abstractions
+* Automatically fill every missing value
+* Delete every unusual record
+* Make the dataset "perfect"
+* Copy a Kaggle notebook
+* Use a library to solve the entire problem
+* Finish as quickly as possible
+
+The objective is learning.
+
+Prefer code that you understand and can explain.
+
+---
+
+# 21. Research Rules
+
+You may search for documentation and specific technical questions.
+
+Good examples:
+
+```text
+Python csv DictReader documentation
+Python regex documentation
+Python datetime strptime
+Python pathlib documentation
+Python exception handling
+Python string methods
+Python write CSV
+```
+
+Bad examples:
+
+```text
+FIFA 21 dataset solution
+FIFA 21 cleaning notebook
+FIFA 21 data cleaning GitHub
+complete FIFA 21 Python cleaning project
+```
+
+If you get stuck, first try to identify **exactly what concept you don't understand**.
+
+Research that concept.
+
+Then return to the project and implement the solution yourself.
+
+---
+
+# 22. The Core Rule
+
+Do not ask:
+
+> "How do I clean this dataset?"
+
+Ask:
+
+> "What is wrong with this dataset, and what evidence do I have that it is wrong?"
+
+Then ask:
+
+> "What should the correct representation be?"
+
+Then:
+
+> "How can I implement and validate that decision in Python?"
+
+That is the main skill this project is designed to develop.
+
+---
+
+# 23. Project Philosophy
+
+This project should feel more like receiving a real data file from another system than completing a tutorial.
+
+You are the person responsible for figuring out what the data means.
+
+There is no predefined list of cleaning operations.
+
+There is no single "correct" cleaning script.
+
+Different reasonable decisions may produce different outputs.
+
+What matters is that your decisions are:
+
+* Justified
+* Consistent
+* Reproducible
+* Validated
+* Documented
+
+The ultimate goal is to develop the habit of looking at raw data and thinking:
+
+> "Before I process this, I need to understand what I'm actually dealing with."

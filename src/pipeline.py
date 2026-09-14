@@ -8,19 +8,26 @@ data_dir = current_directory.parent / "data" / "raw"
 output_dir.mkdir(parents=True, exist_ok=True)
 
 files = [
-    "olist_customers_dataset.csv",
-    "olist_order_items_dataset.csv",
-    "olist_order_reviews_dataset.csv",
-    "olist_orders_dataset.csv",
-    "olist_products_dataset.csv",
-    "product_category_name_translation.csv"
+    "fifa21_raw_data",
+    "fifa21 raw data v2"
 ]
 
-all_files = {}
+datasets = {}
 
 for file_name in files:
-    with open(f"{data_dir}/{file_name}", "r", encoding="utf-8") as f:
-        file_name_no_csv = file_name.replace(".csv", "")
-        all_files[file_name_no_csv] = list(csv.DictReader(f))
-    with open(f"{output_dir}/{file_name_no_csv}.json", "w", encoding="utf-8") as f:
-        json.dump(all_files[file_name_no_csv], f, indent=2)
+    with open(f"{data_dir}/{file_name}.csv", "r", encoding="utf-8") as f:
+        datasets[file_name] = list(csv.DictReader(f))
+    with open(f"{output_dir}/{file_name}.json", "w", encoding="utf-8") as f:
+        json.dump(datasets[file_name], f, indent=2)
+
+def check_for_nulls(dataset):
+    for file_name in files:
+        with open(f"{output_dir}/{file_name}.json", "r", encoding="utf-8") as f:
+            json_file = json.load(f)
+            for record in json_file:
+                for field, value in record.items():
+                    if value is None:
+                        record.pop(field)
+
+
+check_for_nulls(datasets)
