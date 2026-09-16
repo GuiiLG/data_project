@@ -11,4 +11,4 @@ def clean_structure(datasets):
                 player[field] = round(float(player[field]) * 0.453592,2)
             if value.isdigit():
                 player[field] = int(value) 
-        print(player["Joined"])
+    return datasets
