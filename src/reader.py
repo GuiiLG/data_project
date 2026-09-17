@@ -1,14 +1,9 @@
 import csv
 def reader(data_dir):
-    files = [
-        "fifa21_raw_data",
-        "fifa21 raw data v2"
-    ]
-
-    datasets = {}
-
-    for file_name in files:
+    file_name = "fifa21_raw_data"
+    try:
         with open(f"{data_dir}/{file_name}.csv", "r", encoding="utf-8") as f:
-            datasets[file_name] = list(csv.DictReader(f))
-            
-    return datasets
+            dataset= list(csv.DictReader(f))
+    except FileNotFoundError:
+        print(f"File not found: {data_dir}/{file_name}.csv")
+    return dataset

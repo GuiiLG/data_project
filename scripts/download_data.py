@@ -8,9 +8,12 @@ file_path = current_directory.parent / "data" / "raw"
 
 
 # Load the latest version
-kagglehub.dataset_download(
-    "yagunnersya/fifa-21-messy-raw-dataset-for-cleaning-exploring",
-    path="fifa21_raw_data.csv",
-    output_dir=str(file_path),
-)
+try:
+    kagglehub.dataset_download(
+        "yagunnersya/fifa-21-messy-raw-dataset-for-cleaning-exploring",
+        path="fifa21_raw_data.csv",
+        output_dir=str(file_path),
+    )
+except Exception as e:
+    print("Error while installing data:", e)
 

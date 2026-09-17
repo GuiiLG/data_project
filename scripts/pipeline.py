@@ -2,6 +2,7 @@ from src.reader import reader
 from src.check_for_nulls import check_for_nulls
 from src.clean_data import clean_data
 from src.processed import processed
+from src.check_for_duplicates import check_for_duplicates
 from pathlib import Path
 
 current_directory = Path(__file__).resolve().parent
@@ -11,9 +12,12 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 
 def main():
-    datasets = reader(data_dir)
-    clean = clean_data(datasets)
-    processed(output_dir, clean)
+    dataset = reader(data_dir)
+    clean = clean_data(dataset)
+    null = check_for_nulls(clean)
+    duplicates = check_for_duplicates(null)
+    
+    processed(output_dir, duplicates)
 
 
 if __name__ == "__main__":
