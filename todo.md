@@ -131,3 +131,24 @@
   - [X] Adicionar `__pycache__/` ao `.gitignore`.
   - [X] Adicionar `.venv/` ao `.gitignore`.
   - [X] Decidir se `data/` será totalmente ignorado ou se apenas os dados brutos serão ignorados.
+
+
+  Corrigir duplicatas por ID — você já implementou isso em check_for_duplicates.py.
+  - Criar main() no download — já está feito.
+  - Corrigir o README básico, .gitignore e comandos — já estão marcados como concluídos.
+  - Criar relatório de qualidade agora — deixaria para depois das correções principais.
+  - Melhorar muito a documentação agora — primeiro deixaria o pipeline confiável.
+  - Fazer otimizações ou adicionar bibliotecas — neste momento não são necessárias.
+
+  As próximas tarefas que eu te daria, nesta ordem, seriam:
+
+  1. Corrigir check_for_nulls, porque ele remove itens durante o loop.
+  2. Corrigir clean_data para não quebrar com None ou valores vazios.
+  3. Ajustar a ordem do pipeline: validar nulos antes de limpar.
+  4. Corrigir reader para sempre retornar uma lista, mesmo quando o arquivo não existe.
+  5. Usar newline="" e validar a quantidade de registros gravados.
+  6. Criar testes básicos para conversões e duplicatas.
+  7. Só depois criar o quality_report.json e completar o README.
+
+  A correção de duplicatas foi um avanço real, mas ainda há um problema importante: check_for_nulls continua usando
+  dataset.remove(player) dentro do for, então alguns registros inválidos podem escapar.
