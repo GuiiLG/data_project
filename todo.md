@@ -90,18 +90,18 @@
 
   ### Carga
 
-  - [ ] Criar automaticamente o diretório de saída.
-  - [ ] Validar se o arquivo processado foi criado.
+  - [X] Criar automaticamente o diretório de saída.
+  - [X] Validar se o arquivo processado foi criado.
   - [ ] Conferir a quantidade de registros gravados.
-  - [ ] Garantir que executar duas vezes não duplica registros.
-  - [ ] Tratar o caso de dataset vazio.
+  - [X] Garantir que executar duas vezes não duplica registros.
+  - [X] Tratar o caso de dataset vazio.
 
   ### Download
 
-  - [ ] Remover o import não utilizado de `KaggleDatasetAdapter`.
-  - [ ] Criar uma função `main()` em `download_data.py`.
-  - [ ] Usar `if __name__ == "__main__":`.
-  - [ ] Tratar erros de download com mensagens mais específicas.
+  - [X] Remover o import não utilizado de `KaggleDatasetAdapter`.
+  - [X] Criar uma função `main()` em `download_data.py`.
+  - [X] Usar `if __name__ == "__main__":`.
+  - [] Tratar erros de download com mensagens mais específicas.
 
   ### Testes
 
@@ -115,19 +115,19 @@
 
   ### README
 
-  - [ ] Corrigir `cd data_projetc/` para o nome correto do diretório.
-  - [ ] Explicar o objetivo do projeto.
-  - [ ] Explicar a fonte dos dados.
+  - [X] Corrigir `cd data_projetc/` para o nome correto do diretório.
+  - [X] Explicar o objetivo do projeto.
+  - [X] Explicar a fonte dos dados.
   - [ ] Explicar as transformações.
   - [ ] Explicar as regras para dados inválidos.
   - [ ] Explicar as validações.
   - [ ] Explicar onde ficam os arquivos de saída.
   - [ ] Documentar o relatório de qualidade.
   - [ ] Documentar limitações conhecidas.
-  - [ ] Testar todos os comandos do README.
+  - [X] Testar todos os comandos do README.
 
   ### Git
 
-  - [ ] Adicionar `__pycache__/` ao `.gitignore`.
-  - [ ] Adicionar `.venv/` ao `.gitignore`.
-  - [ ] Decidir se `data/` será totalmente ignorado ou se apenas os dados brutos serão ignorados.
+  - [X] Adicionar `__pycache__/` ao `.gitignore`.
+  - [X] Adicionar `.venv/` ao `.gitignore`.
+  - [X] Decidir se `data/` será totalmente ignorado ou se apenas os dados brutos serão ignorados.
