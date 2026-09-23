@@ -13,9 +13,10 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 def main():
     dataset = reader(data_dir)
-    clean = clean_data(dataset)
-    null = check_for_nulls(clean)
+    null = check_for_nulls(dataset)
     duplicates = check_for_duplicates(null)
+    clean = clean_data(duplicates)
+
     
     processed(output_dir, duplicates)
 

@@ -1,15 +1,16 @@
 def clean_data(dataset):
     for player in dataset:
         for field, value in player.items():
-            player[field] = value.strip().replace("\n", " ").replace("★","").strip()
+            if type(player[field]) == str:
+                player[field] = player[field].strip().replace("\n", " ").replace("★","").strip()
             if field == "Height":
                 convert_height(player,field)
             if field == "Weight":
                 convert_weight(player,field)
             if field == "Value" or field == "Wage" or field == "Release Clause":
                 convert_money(player,field)
-            if value.isdigit():
-                player[field] = int(value) 
+            if player[field].isdigit() and type(player[field] == str):
+                player[field] = int(player[field]) 
             
     return dataset
 

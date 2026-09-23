@@ -1,5 +1,5 @@
 def check_for_nulls(dataset):
-    mandatory_columns = ["LongName","playerUrl","Nationality","Positions","Name","Age","↓OVA","ID","Height","Weight","foot","Growth"]
+    mandatory_columns = ["LongName","playerUrl","Nationality","Positions","Name","Age","↓OVA","ID","Height","Weight","foot","Growth", "Value", "Wage", "Release Clause"]
     cleaned_dataset = []
     for player in dataset:
         invalid_player = False
