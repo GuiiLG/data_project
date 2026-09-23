@@ -18,7 +18,7 @@ def main():
     clean = clean_data(duplicates)
 
     
-    processed(output_dir, duplicates)
+    processed(output_dir, clean)
 
 
 if __name__ == "__main__":

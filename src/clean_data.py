@@ -9,8 +9,9 @@ def clean_data(dataset):
                 convert_weight(player,field)
             if field == "Value" or field == "Wage" or field == "Release Clause":
                 convert_money(player,field)
-            if player[field].isdigit() and type(player[field] == str):
+            if type(player[field]) == str and player[field].isdigit():
                 player[field] = int(player[field]) 
+
             
     return dataset
 

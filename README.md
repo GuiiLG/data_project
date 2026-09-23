@@ -23,3 +23,9 @@ Practice data pipeline and python good practices.
 ```
 yagunnersya/fifa-21-messy-raw-dataset-for-cleaning-exploring
 ```
+
+## Tests:
+```bash
+    uv run python -m tests
+
+```

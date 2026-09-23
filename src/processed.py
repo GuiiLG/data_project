@@ -1,7 +1,7 @@
 import csv
 def processed(output_dir, dataset):
     try: 
-        with open(f"{output_dir}/fifa21_raw_data.csv", "w", encoding="utf-8") as f:
+        with open(f"{output_dir}/fifa21_raw_data.csv", "w",newline="", encoding="utf-8") as f:
             fields = []
             for key in dataset[0].keys():
                 fields.append(key)
